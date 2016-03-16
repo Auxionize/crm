@@ -23,16 +23,16 @@
   },
   "homepage": "https://github.com/Auxionize/crm#readme",
   "dependencies": {
-	"co": "^4.6.0",
-	"lodash": "^4.5.1"
+    "co": "^4.6.0",
+    "underscore": "^1.8.3"
   },
   "devDependencies": {
-	"chai": "^3.5.0",
-	"chai-as-promised": "^5.2.0",
-	"co": "^4.6.0",
-	"co-mocha": "^1.1.2",
-	"mocha": "^2.4.5",
-	"pg": "^4.4.4",
-	"sequelize": "^3.19.2"
+    "chai": "^3.5.0",
+    "chai-as-promised": "^5.2.0",
+    "co-mocha": "^1.1.2",
+    "mocha": "^2.4.5",
+    "pg": "^4.4.4",
+    "sequelize": "^3.19.2",
+    "stray": "^0.1.2"
   }
 }
