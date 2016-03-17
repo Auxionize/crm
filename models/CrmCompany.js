@@ -3,6 +3,8 @@
  */
 'use strict';
 
+let _ = require('underscore');
+
 module.exports = function(sequelize, clientModel) {
 	let DataTypes = sequelize.Sequelize;
 	let processEnumObject = require('../utils/enum').processEnumObject;
@@ -139,13 +141,30 @@ module.exports = function(sequelize, clientModel) {
 		{
 			timestamps: true,
 			classMethods: {
-				add: function* (data) {
+				addModel: function* (data) {
 					return yield this.create(data);
 				},
-				get: function* (ClientId) {
-					let record = yield crmCompanyModel.findOne({where: {ClientId}});
+
+				getModel: function* (ClientId, attributes) {
+					let record;
+
+					if(_.isArray(attributes) && !_.isEmpty(attributes)) {
+						record = yield crmCompanyModel.findOne({
+							where: {ClientId},
+							attributes: attributes
+						});
+					}
+					else {
+						record = yield crmCompanyModel.findOne({where: {ClientId}});
+					}
 
 					return record === null ? false : record;
+				},
+
+				updateModel: function* (ClientId, data) {
+					let updateResult = yield this.update(data, {where: {ClientId}});
+
+					return updateResult;
 				}
 			}
 		});

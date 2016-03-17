@@ -12,7 +12,7 @@ var expect = chai.expect;
 require('co-mocha');
 var randomizeString = require('stray');
 var Sequelize = require('sequelize');
-var sequelize = new Sequelize('crm', 'postgres', '24262426', {
+var sequelize = new Sequelize('crm', 'postgres', 'pass', {
 	host: 'localhost',
 	dialect: 'postgres'
 });
@@ -25,12 +25,11 @@ var addModel = function(name, attribs, options){
 };
 
 // cache definitions
-var i = 0;
 var ClientModel    = addModel('Client', {name: {type: Sequelize.STRING}});
 var index = require('../index')(sequelize, ClientModel);
 var crmCompany = index.crmCompany;
-var savedRow1, savedRow2, savedRow3;
-var cm1, cm2, cm3;
+var savedRow1, savedRow2, savedRow3, cm1, cm2, cm3;
+var fields = [];
 
 describe('Array', function() {
 	// executed before each test
@@ -44,7 +43,7 @@ describe('Array', function() {
 	});
 
 	let addRecords = function* () {
-		savedRow1 = yield crmCompany.add({
+		savedRow1 = yield crmCompany.addModel({
 			ClientId: cm3.id,
 			note: randomizeString(),
 			owner: randomizeString(),
@@ -52,7 +51,7 @@ describe('Array', function() {
 			contactPerson: randomizeString()
 		});
 
-		savedRow2 = yield crmCompany.add({
+		savedRow2 = yield crmCompany.addModel({
 			ClientId: cm1.id,
 			note: randomizeString(),
 			owner: randomizeString(),
@@ -60,7 +59,7 @@ describe('Array', function() {
 			contactPerson: randomizeString()
 		});
 
-		savedRow3 = yield crmCompany.add({
+		savedRow3 = yield crmCompany.addModel({
 			ClientId: cm2.id,
 			note: randomizeString(),
 			owner: randomizeString(),
@@ -78,15 +77,26 @@ describe('Array', function() {
 	});
 
 	it('should get records by ClientId', function* () {
+		fields = ['id', 'ClientId'];
 		yield addRecords();
 
-		let r1 = yield crmCompany.get(1);
-		let r2 = yield crmCompany.get(2);
-		let r3 = yield crmCompany.get(3);
+		let r1 = yield crmCompany.getModel(1, fields);
+		let r2 = yield crmCompany.getModel(2, fields);
+		let r3 = yield crmCompany.getModel(3, fields);
 
 		expect(r1.ClientId).to.equal(1);
 		expect(r2.ClientId).to.equal(2);
 		expect(r3.ClientId).to.equal(3);
+	});
+
+	it('should update records by ClientId', function* () {
+		fields = ['decisionMaker'];
+		yield addRecords();
+		let decisionMaker = randomizeString();
+		let updateResult = yield crmCompany.updateModel(1, {decisionMaker: decisionMaker});
+		let getResult = yield crmCompany.getModel(1, fields);
+
+		expect(getResult.decisionMaker).to.equal(decisionMaker);
 	});
 });
 
