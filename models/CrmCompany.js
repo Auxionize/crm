@@ -3,7 +3,7 @@
  */
 'use strict';
 
-let _ = require('underscore');
+let _ = require('lodash');
 
 module.exports = function(sequelize, clientModel) {
 	let DataTypes = sequelize.Sequelize;
@@ -27,8 +27,6 @@ module.exports = function(sequelize, clientModel) {
 	processEnumObject(ContactType);
 	processEnumObject(CompanyPriority);
 	processEnumObject(ClientStatus);
-
-	// todo make derivation from crmCompany model to client and collaborator
 
 	let crmCompanyModel = sequelize.define(
 		'CrmCompany',

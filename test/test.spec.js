@@ -5,7 +5,6 @@
 
 // Include required modules
 var co = require('co');
-var _ = require('underscore');
 var chai = require('chai');
 chai.use(require('chai-as-promised'));
 var expect = chai.expect;

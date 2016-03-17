@@ -1,6 +1,6 @@
 {
   "name": "crm",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "The module defines a sequalize model that represents client | collaborator data in different contextes",
   "main": "index.js",
   "scripts": {
@@ -24,7 +24,7 @@
   "homepage": "https://github.com/Auxionize/crm#readme",
   "dependencies": {
     "co": "^4.6.0",
-    "underscore": "^1.8.3"
+    "lodash": "^4.6.1"
   },
   "devDependencies": {
     "chai": "^3.5.0",
