@@ -146,17 +146,10 @@ module.exports = function(sequelize, clientModel) {
 				},
 
 				getModel: function* (ClientId, attributes) {
-					let record;
-
-					if(_.isArray(attributes) && !_.isEmpty(attributes)) {
-						record = yield crmCompanyModel.findOne({
-							where: {ClientId},
-							attributes: attributes
-						});
-					}
-					else {
-						record = yield crmCompanyModel.findOne({where: {ClientId}});
-					}
+					let options = _.isArray(attributes) && !_.isEmpty(attributes)
+									? {where: {ClientId}, attributes: attributes}
+									: {where: {ClientId}};
+					let record = yield crmCompanyModel.findOne(options);
 
 					return record === null ? false : record;
 				},
