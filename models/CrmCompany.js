@@ -158,6 +158,10 @@ module.exports = function(sequelize, clientModel) {
 					let updateResult = yield this.update(data, {where: {ClientId}});
 
 					return updateResult;
+				},
+
+				destroyModel: function* (ClientId) {
+					return yield this.destroy({where: {ClientId}});
 				}
 			}
 		});

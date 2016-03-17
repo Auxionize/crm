@@ -42,7 +42,7 @@ describe('Array', function() {
 		cm3 = yield ClientModel.create({name: randomizeString()});
 	});
 
-	let addRecords = function* () {
+	let seedData = function* () {
 		savedRow1 = yield crmCompany.addModel({
 			ClientId: cm3.id,
 			note: randomizeString(),
@@ -69,16 +69,16 @@ describe('Array', function() {
 	};
 
 	it('should add records', function* () {
-		yield addRecords();
+		yield seedData();
 
 		expect(savedRow1).to.be.a('object');
 		expect(savedRow2).to.be.a('object');
 		expect(savedRow3).to.be.a('object');
 	});
 
-	it('should get records by ClientId', function* () {
+	it('should get model by ClientId', function* () {
 		fields = ['id', 'ClientId'];
-		yield addRecords();
+		yield seedData();
 
 		let r1 = yield crmCompany.getModel(1, fields);
 		let r2 = yield crmCompany.getModel(2, fields);
@@ -89,14 +89,23 @@ describe('Array', function() {
 		expect(r3.ClientId).to.equal(3);
 	});
 
-	it('should update records by ClientId', function* () {
+	it('should update model by ClientId', function* () {
 		fields = ['decisionMaker'];
-		yield addRecords();
+		yield seedData();
 		let decisionMaker = randomizeString();
 		let updateResult = yield crmCompany.updateModel(1, {decisionMaker: decisionMaker});
 		let getResult = yield crmCompany.getModel(1, fields);
 
 		expect(getResult.decisionMaker).to.equal(decisionMaker);
+	});
+
+	it('should destroy model by ClientId', function* () {
+		yield seedData();
+		let destroyResult = yield crmCompany.destroyModel(2);
+		let vainDestroy = yield crmCompany.destroyModel(22);
+
+		expect(destroyResult).to.equal(1);
+		expect(vainDestroy).to.equal(0);
 	});
 });
 
