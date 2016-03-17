@@ -141,6 +141,11 @@ module.exports = function(sequelize, clientModel) {
 			classMethods: {
 				add: function* (data) {
 					return yield this.create(data);
+				},
+				get: function* (ClientId) {
+					let record = yield crmCompanyModel.findOne({where: {ClientId}});
+
+					return record === null ? false : record;
 				}
 			}
 		});

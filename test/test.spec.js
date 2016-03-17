@@ -12,7 +12,7 @@ var expect = chai.expect;
 require('co-mocha');
 var randomizeString = require('stray');
 var Sequelize = require('sequelize');
-var sequelize = new Sequelize('crm', 'postgres', 'pass', {
+var sequelize = new Sequelize('crm', 'postgres', '24262426', {
 	host: 'localhost',
 	dialect: 'postgres'
 });
@@ -29,38 +29,64 @@ var i = 0;
 var ClientModel    = addModel('Client', {name: {type: Sequelize.STRING}});
 var index = require('../index')(sequelize, ClientModel);
 var crmCompany = index.crmCompany;
-var numberOfRecords = 3;
-var dataArray = [];
+var savedRow1, savedRow2, savedRow3;
+var cm1, cm2, cm3;
 
 describe('Array', function() {
 	// executed before each test
 	beforeEach(function* () {
 		yield ClientModel.sync({force: true});
-
-		for(i = 0; i < numberOfRecords; i++) {
-			var currentModel = yield ClientModel.create();
-			var currentData = {
-				ClientId: currentModel.id,
-				note: randomizeString(),
-				owner: randomizeString(),
-				manager: randomizeString(),
-				contactPerson: randomizeString()
-			};
-
-			dataArray.push(currentData);
-		}
-
 		yield crmCompany.sync({force: true});
+
+		cm1 = yield ClientModel.create({name: randomizeString()});
+		cm2 = yield ClientModel.create({name: randomizeString()});
+		cm3 = yield ClientModel.create({name: randomizeString()});
 	});
 
-	it('should add records with success', function* () {
-		var savedRow1 = yield crmCompany.add(dataArray[0]);
-		var savedRow2 = yield crmCompany.add(dataArray[1]);
-		var savedRow3 = yield crmCompany.add(dataArray[2]);
+	let addRecords = function* () {
+		savedRow1 = yield crmCompany.add({
+			ClientId: cm3.id,
+			note: randomizeString(),
+			owner: randomizeString(),
+			manager: randomizeString(),
+			contactPerson: randomizeString()
+		});
+
+		savedRow2 = yield crmCompany.add({
+			ClientId: cm1.id,
+			note: randomizeString(),
+			owner: randomizeString(),
+			manager: randomizeString(),
+			contactPerson: randomizeString()
+		});
+
+		savedRow3 = yield crmCompany.add({
+			ClientId: cm2.id,
+			note: randomizeString(),
+			owner: randomizeString(),
+			manager: randomizeString(),
+			contactPerson: randomizeString()
+		});
+	};
+
+	it('should add records', function* () {
+		yield addRecords();
 
 		expect(savedRow1).to.be.a('object');
 		expect(savedRow2).to.be.a('object');
 		expect(savedRow3).to.be.a('object');
+	});
+
+	it('should get records by ClientId', function* () {
+		yield addRecords();
+
+		let r1 = yield crmCompany.get(1);
+		let r2 = yield crmCompany.get(2);
+		let r3 = yield crmCompany.get(3);
+
+		expect(r1.ClientId).to.equal(1);
+		expect(r2.ClientId).to.equal(2);
+		expect(r3.ClientId).to.equal(3);
 	});
 });
 
