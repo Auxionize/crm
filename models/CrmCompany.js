@@ -33,11 +33,8 @@ module.exports = function(sequelize, clientModel) {
 		{
 			ClientId: {
 				type: DataTypes.INTEGER,
-				references: {
-					model: clientModel,
-					key: 'id',
-					deferrable: sequelize.Deferrable.INITIALLY_IMMEDIATE
-				}
+				references: { model: clientModel, key: 'id' },
+				allowNull: false
 			},
 			note: {
 				type: DataTypes.STRING(10000)
