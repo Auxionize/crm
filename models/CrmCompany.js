@@ -5,7 +5,7 @@
 
 let _ = require('lodash');
 
-module.exports = function(sequelize, clientModel) {
+module.exports = function(sequelize, Client, User) {
 	let DataTypes = sequelize.Sequelize;
 	let processEnumObject = require('../utils/enum').processEnumObject;
 	let ContactType = {
@@ -28,14 +28,9 @@ module.exports = function(sequelize, clientModel) {
 	processEnumObject(CompanyPriority);
 	processEnumObject(ClientStatus);
 
-	let crmCompanyModel = sequelize.define(
+	let CrmCompany = sequelize.define(
 		'CrmCompany',
 		{
-			ClientId: {
-				type: DataTypes.INTEGER,
-				references: { model: clientModel, key: 'id' },
-				allowNull: false
-			},
 			note: {
 				type: DataTypes.STRING(10000)
 			},
@@ -131,7 +126,19 @@ module.exports = function(sequelize, clientModel) {
 
 			purchaseVolume: {
 				type: DataTypes.STRING(500)
-			}
+			},
+			
+			linkStatus: {
+				type: DataTypes.VIRTUAL,
+				sqlExpr: function (alias) {
+					let condition = 'CASE WHEN "' + alias+ '"."ClientId" IS NULL';
+					condition += " THEN 'UNLINKED'";
+					condition += " ELSE 'LINKED'";
+					condition += " END";
+
+					return sequelize.literal(condition);
+				}
+			},
 		},
 		{
 			timestamps: true,
@@ -144,7 +151,7 @@ module.exports = function(sequelize, clientModel) {
 					let options = _.isArray(attributes) && !_.isEmpty(attributes)
 									? {where: {ClientId}, attributes: attributes}
 									: {where: {ClientId}};
-					let record = yield crmCompanyModel.findOne(options);
+					let record = yield CrmCompany.findOne(options);
 
 					return record === null ? false : record;
 				},
@@ -161,9 +168,15 @@ module.exports = function(sequelize, clientModel) {
 			}
 		});
 
-	crmCompanyModel.belongsTo(clientModel, {as: 'Client', foreignKey: {allowNull: false}});
-	clientModel.hasOne(crmCompanyModel, {foreignKey: 'ClientId'});
+	/*
+		Relations
+	 */
+	CrmCompany.belongsTo(Client, {as: 'Client', foreignKey: {allowNull: false}});
+	Client.hasOne(CrmCompany, {foreignKey: 'ClientId'});
 
-	return crmCompanyModel;
+	CrmCompany.belongsTo(User, {as: 'Representative', foreignKey: {allowNull: false}});
+	User.hasOne(CrmCompany, {foreignKey: 'RepresentativeId'});
+
+	return CrmCompany;
 }
 

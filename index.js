@@ -2,11 +2,11 @@
  * Created by yordan on 3/16/16.
  */
 'use strict';
-module.exports = function(sequelize, clientModel) {
-	let crmCompany = require('./models/CrmCompany')(sequelize, clientModel);
+module.exports = function(sequelize, Client, User) {
+	let CrmCompany = require('./models/CrmCompany')(sequelize, Client, User);
 	// TODO CRM logic
 
-	return {crmCompany: crmCompany};
+	return {CrmCompany: CrmCompany};
 };
 
 
