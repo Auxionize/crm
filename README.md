@@ -5,7 +5,7 @@
 Crm is designed to be simplest way to integrate and use CRM system.
 
 ```
-var client = require('index')(sequalize, clientModel);
+var client = require('index')(sequalize, Client, User);
 ```
  
 ``` 
