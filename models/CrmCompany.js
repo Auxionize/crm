@@ -31,6 +31,18 @@ module.exports = function(sequelize, Client, User) {
 	let CrmCompany = sequelize.define(
 		'CrmCompany',
 		{
+			name: {
+				type: DataTypes.STRING(10000)
+			},
+
+			countryOfReg: {
+				type: DataTypes.STRING(10000)
+			},
+
+			regNumber: {
+				type: DataTypes.STRING(10000)
+			},
+
 			note: {
 				type: DataTypes.STRING(10000)
 			},
@@ -127,7 +139,7 @@ module.exports = function(sequelize, Client, User) {
 			purchaseVolume: {
 				type: DataTypes.STRING(500)
 			},
-			
+
 			linkStatus: {
 				type: DataTypes.VIRTUAL,
 				sqlExpr: function (alias) {
