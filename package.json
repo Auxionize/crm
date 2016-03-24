@@ -1,6 +1,6 @@
 {
   "name": "crm",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "The module defines a sequalize model that represents client | collaborator data in different contextes",
   "main": "index.js",
   "scripts": {
