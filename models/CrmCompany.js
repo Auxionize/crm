@@ -183,10 +183,10 @@ module.exports = function(sequelize, Client, User) {
 	/*
 		Relations
 	 */
-	CrmCompany.belongsTo(Client, {as: 'Client', foreignKey: {allowNull: false}});
+	CrmCompany.belongsTo(Client, {as: 'Client', foreignKey: {allowNull: true}});
 	Client.hasOne(CrmCompany, {foreignKey: 'ClientId'});
 
-	CrmCompany.belongsTo(User, {as: 'Representative', foreignKey: {allowNull: false}});
+	CrmCompany.belongsTo(User, {as: 'Representative', foreignKey: {allowNull: true}});
 	User.hasOne(CrmCompany, {foreignKey: 'RepresentativeId'});
 
 	return CrmCompany;
