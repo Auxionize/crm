@@ -151,6 +151,52 @@ module.exports = function(sequelize, Client, User) {
 					return sequelize.literal(condition);
 				}
 			},
+
+			turnover: {
+				type: DataTypes.INTEGER,
+				defaultValue: 0
+			},
+
+			url: {
+				type: DataTypes.STRING(1000)
+			},
+
+			supplyDirector: {
+				type: DataTypes.STRING(500),
+				defaultValue: null,
+				allowNull: true
+			},
+
+			supplyDirectorEmail: {
+				type: DataTypes.STRING(500),
+				defaultValue: null,
+				allowNull: true
+			},
+
+			supplyDirectorPhone: {
+				type: DataTypes.STRING(500),
+				defaultValue: null,
+				allowNull: true
+			},
+
+			commercialDirector: {
+				type: DataTypes.STRING(500),
+				defaultValue: null,
+				allowNull: true
+			},
+
+			commercialDirectorEmail: {
+				type: DataTypes.STRING(500),
+				defaultValue: null,
+				allowNull: true
+			},
+
+			commercialDirectorPhone: {
+				type: DataTypes.STRING(500),
+				defaultValue: null,
+				allowNull: true
+			}
+
 		},
 		{
 			timestamps: true,
