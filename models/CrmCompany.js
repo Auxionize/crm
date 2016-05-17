@@ -43,6 +43,14 @@ module.exports = function(sequelize, Client, User) {
 				type: DataTypes.STRING(10000)
 			},
 
+			bulstatNumber: {
+				type: DataTypes.STRING(50)
+			},
+
+			vatNumber: {
+				type: DataTypes.STRING(50)
+			},
+
 			note: {
 				type: DataTypes.STRING(10000)
 			},
