@@ -4,9 +4,10 @@
 'use strict';
 module.exports = function(sequelize, Client, User) {
 	let CrmCompany = require('./models/CrmCompany')(sequelize, Client, User);
+	let CrmContactPerson = require('./models/CrmContactPerson')(sequelize, CrmCompany);
 	// TODO CRM logic
 
-	return {CrmCompany: CrmCompany};
+	return {CrmCompany: CrmCompany, CrmContactPerson: CrmContactPerson};
 };
 
 
