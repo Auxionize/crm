@@ -94,15 +94,12 @@ module.exports = function(sequelize, Client, User) {
 			contact: {
 				type: DataTypes.DATE
 			},
-			/*
-			 moved to pg function, see hooks
 			contactInterval: {
 				type: DataTypes.VIRTUAL,
 				sqlExpr: function (alias) {
 					return sequelize.literal(`date_part('epoch', "${alias}"."contact"- NOW())`);
 				}
 			},
-			*/
 			contactType: {
 				type: DataTypes.ENUM({values: Object.keys(ContactType)})
 			},
@@ -148,8 +145,7 @@ module.exports = function(sequelize, Client, User) {
 			purchaseVolume: {
 				type: DataTypes.STRING(500)
 			},
-			/*
-			 moved to pg function, see hooks
+
 			linkStatus: {
 				type: DataTypes.VIRTUAL,
 				sqlExpr: function (alias) {
@@ -161,7 +157,6 @@ module.exports = function(sequelize, Client, User) {
 					return sequelize.literal(condition);
 				}
 			},
-			*/
 			turnover: {
 				type: DataTypes.INTEGER,
 				defaultValue: 0
