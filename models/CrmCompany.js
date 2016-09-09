@@ -248,7 +248,7 @@ module.exports = function(sequelize, Client, User) {
 									query+=' SELECT' ;
 									query+=' CASE' ;
 									query+=' WHEN $1."ClientId" IS NULL THEN \'UNLINKED\'' ;
-									query+=' ELSE \'LINKED"\'' ;
+									query+=' ELSE \'LINKED\'' ;
 									query+=' END' ;
 									query+=' $$ STABLE LANGUAGE SQL' ;
 								return sequelize.query(query, {transaction: t});
