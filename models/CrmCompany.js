@@ -94,14 +94,15 @@ module.exports = function(sequelize, Client, User) {
 			contact: {
 				type: DataTypes.DATE
 			},
-
+			/*
+			 moved to pg function, see hooks
 			contactInterval: {
 				type: DataTypes.VIRTUAL,
 				sqlExpr: function (alias) {
 					return sequelize.literal(`date_part('epoch', "${alias}"."contact"- NOW())`);
 				}
 			},
-
+			*/
 			contactType: {
 				type: DataTypes.ENUM({values: Object.keys(ContactType)})
 			},
@@ -147,11 +148,12 @@ module.exports = function(sequelize, Client, User) {
 			purchaseVolume: {
 				type: DataTypes.STRING(500)
 			},
-
+			/*
+			 moved to pg function, see hooks
 			linkStatus: {
 				type: DataTypes.VIRTUAL,
 				sqlExpr: function (alias) {
-					let condition = 'CASE WHEN "' + alias+ '"."ClientId" IS NULL';
+					let condition = ' CASE WHEN "' + alias+ '"."ClientId" IS NULL';
 					condition += " THEN 'UNLINKED'";
 					condition += " ELSE 'LINKED'";
 					condition += " END";
@@ -159,7 +161,7 @@ module.exports = function(sequelize, Client, User) {
 					return sequelize.literal(condition);
 				}
 			},
-
+			*/
 			turnover: {
 				type: DataTypes.INTEGER,
 				defaultValue: 0
@@ -230,6 +232,28 @@ module.exports = function(sequelize, Client, User) {
 
 				destroyModel: function* (ClientId) {
 					return yield this.destroy({where: {ClientId}});
+				}
+			},
+			hooks:{
+				afterSync:function(){
+					return  sequelize.transaction(function(t){
+						let query = ' CREATE OR REPLACE FUNCTION "contactInterval"("CrmCompanies")' ;
+							query+=' RETURNS double precision AS $$' ;
+							query+=' SELECT date_part(\'epoch\', $1."contact"- NOW())' ;
+							query+=' $$ STABLE LANGUAGE SQL' ;
+						return sequelize.query(query, {transaction: t})
+							.then(function(){
+								let query = ' CREATE OR REPLACE FUNCTION "linkStatus"("CrmCompanies")' ;
+									query+=' RETURNS text AS $$' ;
+									query+=' SELECT' ;
+									query+=' CASE' ;
+									query+=' WHEN $1."ClientId" IS NULL THEN \'UNLINKED\'' ;
+									query+=' ELSE \'LINKED"\'' ;
+									query+=' END' ;
+									query+=' $$ STABLE LANGUAGE SQL' ;
+								return sequelize.query(query, {transaction: t});
+							});
+					});
 				}
 			}
 		});
