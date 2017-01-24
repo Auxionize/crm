@@ -330,5 +330,5 @@ module.exports = function(sequelize, Client, User) {
 	User.hasOne(CrmCompany, {foreignKey: 'RepresentativeId'});
 
 	return CrmCompany;
-};
+}
 
