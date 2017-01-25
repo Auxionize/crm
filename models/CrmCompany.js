@@ -202,7 +202,7 @@ module.exports = function(sequelize, Client, User) {
 
 			salesRepDate: {
 				type: DataTypes.DATE,
-				defaultValue: null,
+				defaultValue: DataTypes.NOW,
 				allowNull: true
 			},
 
@@ -210,16 +210,6 @@ module.exports = function(sequelize, Client, User) {
 				type: DataTypes.INTEGER,
 				allowNull: false,
 				defaultValue: 20
-			},
-
-			available: {
-				type: DataTypes.STRING,
-				dbFunction: true
-			},
-
-			graceRemaining: {
-				type: DataTypes.NUMERIC,
-				dbFunction: true
 			}
 
 		},
@@ -285,7 +275,7 @@ module.exports = function(sequelize, Client, User) {
 									WHEN 
 									$1."ClientId" IS NULL
 									AND $1."RepresentativeId" IS NOT NULL 
-									AND NOW()::date > ($1."salesRepDate"::date + ($1."gracePeriod"::string || ' day')::interval)::date  THEN 'YES'	
+									AND NOW()::date > ($1."salesRepDate"::date + ($1."gracePeriod"::text || ' day')::interval)::date  THEN 'YES'	
 									ELSE 'NO'
 								END;
 								
@@ -304,9 +294,9 @@ module.exports = function(sequelize, Client, User) {
 									WHEN $1."RepresentativeId" IS NULL THEN NULL  
 									WHEN 
 									$1."RepresentativeId" IS NOT NULL 
-									AND NOW()::date > ($1."salesRepDate"::date + ($1."gracePeriod"::string || ' day')::interval)::date THEN -1	
+									AND NOW()::date > ($1."salesRepDate"::date + ($1."gracePeriod"::text || ' day')::interval)::date THEN -1	
 									ELSE 
-									(NOW()::date - ($1."salesRepDate"::date + ($1."gracePeriod"::string || ' day')::interval)::date)::numeric
+									(($1."salesRepDate"::date + ($1."gracePeriod"::text || ' day')::interval - NOW()::date)::date)::numeric
 								END;
 								
 								RETURN remaining;
@@ -330,5 +320,5 @@ module.exports = function(sequelize, Client, User) {
 	User.hasOne(CrmCompany, {foreignKey: 'RepresentativeId'});
 
 	return CrmCompany;
-}
+};
 
