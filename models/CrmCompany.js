@@ -245,7 +245,7 @@ module.exports = function(sequelize, Client, User) {
 									query+=' WHEN $1."ClientId" IS NULL THEN \'UNLINKED\'' ;
 									query+=' ELSE \'LINKED\'' ;
 									query+=' END' ;
-									query+=' $$ STABLE LANGUAGE SQL' ;
+									query+=' $$ STABLE LANGUAGE plpgsql' ;
 								return sequelize.query(query, {transaction: t});
 							});
 					});
