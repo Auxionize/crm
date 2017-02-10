@@ -235,7 +235,7 @@ module.exports = function(sequelize, Client, User) {
 						let query = ' CREATE OR REPLACE FUNCTION "contactInterval"("CrmCompanies")' ;
 							query+=' RETURNS double precision AS $$' ;
 							query+=' SELECT date_part(\'epoch\', $1."contact"- NOW())' ;
-							query+=' $$ STABLE LANGUAGE SQL' ;
+							query+=' $$ STABLE LANGUAGE plpgsql' ;
 						return sequelize.query(query, {transaction: t})
 							.then(function(){
 								let query = ' CREATE OR REPLACE FUNCTION "linkStatus"("CrmCompanies")' ;
