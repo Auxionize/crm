@@ -1,26 +1,24 @@
-/**
- * Created by yordan on 3/16/16.
- */
 'use strict';
 
-let _ = require('lodash');
+const _ = require('lodash');
+const co = require('co');
 
 module.exports = function(sequelize, Client, User) {
 	let DataTypes = sequelize.Sequelize;
 	let processEnumObject = require('../utils/enum').processEnumObject;
 	let ContactType = {
-		Email: '' ,
-		Phone: '' ,
+		Email: '',
+		Phone: '',
 		Meeting: ''
 	};
 	let CompanyPriority = {
-		HIGH: '' ,
-		NORMAL: '' ,
+		HIGH: '',
+		NORMAL: '',
 		LOW: ''
 	};
 	let ClientStatus = {
-		Lead: '' ,
-		Prospect: '' ,
+		Lead: '',
+		Prospect: '',
 		Customer: ''
 	};
 
@@ -96,7 +94,7 @@ module.exports = function(sequelize, Client, User) {
 			},
 			contactInterval: {
 				type: DataTypes.VIRTUAL,
-				sqlExpr: function (alias) {
+				sqlExpr: function(alias) {
 					return sequelize.literal(`date_part('epoch', "${alias}"."contact"- NOW())`);
 				}
 			},
@@ -148,8 +146,8 @@ module.exports = function(sequelize, Client, User) {
 
 			linkStatus: {
 				type: DataTypes.VIRTUAL,
-				sqlExpr: function (alias) {
-					let condition = ' CASE WHEN "' + alias+ '"."ClientId" IS NULL';
+				sqlExpr: function(alias) {
+					let condition = ' CASE WHEN "' + alias + '"."ClientId" IS NULL';
 					condition += " THEN 'UNLINKED'";
 					condition += " ELSE 'LINKED'";
 					condition += " END";
@@ -200,61 +198,120 @@ module.exports = function(sequelize, Client, User) {
 				type: DataTypes.STRING(500),
 				defaultValue: null,
 				allowNull: true
+			},
+
+			salesRepDate: {
+				type: DataTypes.DATE,
+				defaultValue: DataTypes.NOW,
+				allowNull: true
+			},
+
+			gracePeriod: {
+				type: DataTypes.INTEGER,
+				allowNull: false,
+				defaultValue: 20
 			}
 
 		},
 		{
 			timestamps: true,
 			classMethods: {
-				addModel: function* (data) {
+				addModel: function*(data) {
 					return yield this.create(data);
 				},
 
-				getModel: function* (ClientId, attributes) {
+				getModel: function*(ClientId, attributes) {
 					let options = _.isArray(attributes) && !_.isEmpty(attributes)
-									? {where: {ClientId}, attributes: attributes}
-									: {where: {ClientId}};
+						? {where: {ClientId}, attributes: attributes}
+						: {where: {ClientId}};
 					let record = yield CrmCompany.findOne(options);
 
 					return record === null ? false : record;
 				},
 
-				updateModel: function* (ClientId, data) {
+				updateModel: function*(ClientId, data) {
 					let updateResult = yield this.update(data, {where: {ClientId}});
 
 					return updateResult;
 				},
 
-				destroyModel: function* (ClientId) {
+				destroyModel: function*(ClientId) {
 					return yield this.destroy({where: {ClientId}});
 				}
 			},
-			hooks:{
-				afterSync:function(){
-					return  sequelize.transaction(function(t){
-						let query = ' CREATE OR REPLACE FUNCTION "contactInterval"("CrmCompanies")' ;
-							query+=' RETURNS double precision AS $$' ;
-							query+=' SELECT date_part(\'epoch\', $1."contact"- NOW())' ;
-							query+=' $$ STABLE LANGUAGE plpgsql' ;
-						return sequelize.query(query, {transaction: t})
-							.then(function(){
-								let query = ' CREATE OR REPLACE FUNCTION "linkStatus"("CrmCompanies")' ;
-									query+=' RETURNS text AS $$' ;
-									query+=' SELECT' ;
-									query+=' CASE' ;
-									query+=' WHEN $1."ClientId" IS NULL THEN \'UNLINKED\'' ;
-									query+=' ELSE \'LINKED\'' ;
-									query+=' END' ;
-									query+=' $$ STABLE LANGUAGE plpgsql' ;
-								return sequelize.query(query, {transaction: t});
-							});
-					});
+			hooks: {
+				afterSync: function() {
+					return sequelize.transaction(co.wrap(function*(transaction) {
+						let t = {transaction};
+
+						let contactIntervalFn = `
+							CREATE OR REPLACE FUNCTION "contactInterval"("CrmCompanies")
+							RETURNS double precision AS $$
+							SELECT date_part('epoch', $1."contact"- NOW())
+							$$ STABLE LANGUAGE plpgsql;
+						`;
+
+						yield sequelize.query(contactIntervalFn, t);
+
+						let linkStatusFn = `
+								CREATE OR REPLACE FUNCTION "linkStatus"("CrmCompanies")
+								RETURNS text AS $$
+								SELECT
+								CASE
+								WHEN $1."ClientId" IS NULL THEN 'UNLINKED'
+								ELSE 'LINKED'
+								END;
+								$$ STABLE LANGUAGE plpgsql;
+						`;
+
+						yield sequelize.query(linkStatusFn, t);
+
+						let availableFn = `
+							CREATE OR REPLACE FUNCTION "available"("CrmCompanies") RETURNS text AS $$
+							DECLARE  availability text;
+								BEGIN
+								availability := CASE
+									WHEN $1."RepresentativeId" IS NULL THEN 'YES'  
+									WHEN 
+									$1."ClientId" IS NULL
+									AND $1."RepresentativeId" IS NOT NULL 
+									AND NOW()::date > ($1."salesRepDate"::date + ($1."gracePeriod"::text || ' day')::interval)::date  THEN 'YES'	
+									ELSE 'NO'
+								END;
+								
+								RETURN availability;
+							END;
+							$$ STABLE LANGUAGE plpgsql;
+						`;
+
+						yield sequelize.query(availableFn, t);
+
+						let graceRemainingFn = `
+							CREATE OR REPLACE FUNCTION "graceRemaining"("CrmCompanies") RETURNS numeric AS $$
+							DECLARE  remaining numeric;
+								BEGIN
+								remaining := CASE
+									WHEN $1."RepresentativeId" IS NULL THEN NULL  
+									WHEN 
+									$1."RepresentativeId" IS NOT NULL 
+									AND NOW()::date > ($1."salesRepDate"::date + ($1."gracePeriod"::text || ' day')::interval)::date THEN -1	
+									ELSE 
+									(($1."salesRepDate"::date + ($1."gracePeriod"::text || ' day')::interval - NOW()::date)::date)::numeric
+								END;
+								
+								RETURN remaining;
+							END;
+							$$ STABLE LANGUAGE plpgsql;
+						`;
+
+						yield sequelize.query(graceRemainingFn, t);
+					}));
 				}
 			}
 		});
 
 	/*
-		Relations
+	 Relations
 	 */
 	CrmCompany.belongsTo(Client, {as: 'Client', foreignKey: {allowNull: true}});
 	Client.hasOne(CrmCompany, {foreignKey: 'ClientId'});
@@ -263,5 +320,5 @@ module.exports = function(sequelize, Client, User) {
 	User.hasOne(CrmCompany, {foreignKey: 'RepresentativeId'});
 
 	return CrmCompany;
-}
+};
 
