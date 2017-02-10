@@ -248,7 +248,7 @@ module.exports = function(sequelize, Client, User) {
 							CREATE OR REPLACE FUNCTION "contactInterval"("CrmCompanies")
 							RETURNS double precision AS $$
 							SELECT date_part('epoch', $1."contact"- NOW())
-							$$ STABLE LANGUAGE plpgsql;
+							$$ STABLE LANGUAGE SQL;
 						`;
 
 						yield sequelize.query(contactIntervalFn, t);
@@ -261,7 +261,7 @@ module.exports = function(sequelize, Client, User) {
 								WHEN $1."ClientId" IS NULL THEN 'UNLINKED'
 								ELSE 'LINKED'
 								END;
-								$$ STABLE LANGUAGE plpgsql;
+								$$ STABLE LANGUAGE SQL;
 						`;
 
 						yield sequelize.query(linkStatusFn, t);
